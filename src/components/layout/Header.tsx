@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/useAppStore";
@@ -36,8 +37,16 @@ export default function Header() {
   return (
     <header className="z-50 border-b border-border bg-white">
       <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/" className="text-base font-bold text-primary-600">
-          現場の声
+        <Link href="/" className="flex items-center text-base font-bold text-primary-600">
+          <Image
+            src="/logo.png"
+            alt="現場の声ロゴ"
+            width={192}
+            height={174}
+            className="h-7 w-auto"
+            priority
+          />
+          <span className="ml-2">現場の声</span>
         </Link>
 
         <div className="flex items-center gap-2">
