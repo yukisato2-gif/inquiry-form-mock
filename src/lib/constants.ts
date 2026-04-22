@@ -1,4 +1,4 @@
-import type { Category, Status, Role, Urgency, ExpectedAction } from "@/types";
+import type { Category, Status, Role, Urgency, ExpectedAction, LocationArea } from "@/types";
 
 // ============================================
 // カテゴリ
@@ -105,7 +105,57 @@ export const POSTER_STATUS_LABELS: Record<Status, string> = {
 };
 
 // ============================================
-// 拠点
+// 拠点エリア（投稿フォーム用マスタ）
+// ============================================
+export const LOCATION_AREA_LABELS: Record<LocationArea, string> = {
+  tokyo: "東京統括エリア",
+  kanagawa: "神奈川統括エリア",
+  saitama: "埼玉統括エリア",
+  chiba: "千葉統括エリア",
+};
+
+export const LOCATION_AREAS: LocationArea[] = ["tokyo", "kanagawa", "saitama", "chiba"];
+
+/** 拠点エリアごとの拠点一覧（投稿フォームの事業所名プルダウン用）
+ *  保存値が既存集計マスタ LOCATIONS と一致するよう、LOCATIONS に存在する名称のみを採用する。 */
+export const LOCATIONS_BY_AREA: Record<LocationArea, string[]> = {
+  tokyo: [
+    "AMANEKU八王子美山町",
+    "AMANEKU青梅谷野",
+    "AMANEKU八王子宮下町",
+    "AMANEKU八王子川口町A棟",
+    "AMANEKU八王子川口町B棟",
+    "AMANEKU八王子川口町C棟",
+    "AMANEKU八王子田町",
+    "AMANEKU葛飾東金町A棟",
+    "AMANEKU葛飾東金町B棟",
+    "AMANEKU葛飾西水元",
+  ],
+  kanagawa: [
+    "AMANEKU南足柄",
+    "AMANEKU茅ヶ崎萩園",
+    "AMANEKU町田野津田町",
+    "AMANEKU横浜上飯田町",
+    "AMANEKU横浜戸塚町",
+  ],
+  saitama: [
+    "AMANEKU加須",
+    "AMANEKU熊谷妻沼",
+    "AMANEKU久喜上内",
+    "AMANEKU狭山中央",
+    "AMANEKU朝霞溝沼",
+    "AMANEKU鶴ヶ島藤金",
+    "AMANEKU野田中里",
+    "AMANEKU野田琴平",
+  ],
+  chiba: [
+    "AMANEKU袖ヶ浦横田",
+    "AMANEKU千葉仁戸名町",
+  ],
+};
+
+// ============================================
+// 拠点（既存: 管理系画面のマスタ。投稿フォームでは使用しない）
 // ============================================
 export const LOCATIONS: string[] = [
   "AMANEKU八王子美山町",

@@ -17,6 +17,9 @@ export type Urgency = "urgent" | "normal" | "proposal";
 /** 本社に期待する対応 */
 export type ExpectedAction = "inform" | "area_improve" | "hq_check" | "unsure";
 
+/** 拠点エリア（投稿フォーム用の統括エリア区分） */
+export type LocationArea = "tokyo" | "kanagawa" | "saitama" | "chiba";
+
 /** ステータス（全状態） */
 export type Status = "RECEIVED" | "CONFIRMED" | "ESCALATED" | "NOTED";
 
@@ -75,6 +78,7 @@ export interface Post {
   category: Category;
   body: string;
   location: string | null;            // 事業所名（拠点）
+  locationArea?: LocationArea;        // 拠点エリア（投稿フォームから新規追加、旧データ互換のため optional）
   status: Status;
   memo: string;                       // 一次受付メモ（投稿者には非表示）
   createdAt: string;                  // ISO 8601

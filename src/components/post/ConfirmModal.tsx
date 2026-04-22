@@ -1,13 +1,15 @@
 "use client";
 
-import type { Category, Urgency, ExpectedAction } from "@/types";
+import type { Category, Urgency, ExpectedAction, LocationArea } from "@/types";
 import {
   CATEGORY_LABELS,
   URGENCY_LABELS,
   EXPECTED_ACTION_LABELS,
+  LOCATION_AREA_LABELS,
 } from "@/lib/constants";
 
 interface FormData {
+  locationArea: LocationArea | "";
   location: string;
   anonymous: boolean;
   posterName: string;
@@ -48,6 +50,9 @@ export default function ConfirmModal({ form, onConfirm, onCancel }: ConfirmModal
         </p>
 
         <div className="space-y-3 rounded-xl border-[1.5px] border-border bg-surface p-5">
+          <Row label="拠点エリア">
+            {form.locationArea ? LOCATION_AREA_LABELS[form.locationArea as LocationArea] : "—"}
+          </Row>
           <Row label="事業所名">{form.location}</Row>
           <Row label="記名 / 匿名">{form.anonymous ? "匿名で投稿" : "記名"}</Row>
           {!form.anonymous && (

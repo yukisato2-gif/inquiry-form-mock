@@ -6,16 +6,19 @@ import { useAppStore } from "@/stores/useAppStore";
 import {
   CATEGORIES,
   CATEGORY_LABELS,
-  LOCATIONS,
+  LOCATION_AREAS,
+  LOCATION_AREA_LABELS,
+  LOCATIONS_BY_AREA,
   URGENCIES,
   URGENCY_LABELS,
   EXPECTED_ACTION_OPTIONS,
   JOB_TITLES,
 } from "@/lib/constants";
 import ConfirmModal from "@/components/post/ConfirmModal";
-import type { Category, Urgency, ExpectedAction } from "@/types";
+import type { Category, Urgency, ExpectedAction, LocationArea } from "@/types";
 
 interface FormData {
+  locationArea: LocationArea | "";
   location: string;
   anonymous: boolean;
   posterName: string;
@@ -32,6 +35,7 @@ interface FormData {
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const INITIAL: FormData = {
+  locationArea: "",
   location: "",
   anonymous: true,
   posterName: "",
@@ -76,8 +80,17 @@ export default function PostFormPage() {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  /** 拠点エリア変更時: 事業所名も必ずリセット（旧エリアの拠点名が残らないように） */
+  const setLocationArea = (value: LocationArea | "") => {
+    setForm((prev) => ({ ...prev, locationArea: value, location: "" }));
+    setErrors((prev) => ({ ...prev, locationArea: undefined, location: undefined }));
+  };
+
+  const locationOptions = form.locationArea ? LOCATIONS_BY_AREA[form.locationArea] : [];
+
   const validate = (): boolean => {
     const e: FormErrors = {};
+    if (!form.locationArea) e.locationArea = "拠点エリアを選択してください";
     if (!form.location) e.location = "事業所を選択してください";
     if (!form.category) e.category = "カテゴリを選択してください";
     if (!form.urgency) e.urgency = "緊急度を選択してください";
@@ -99,6 +112,7 @@ export default function PostFormPage() {
   const handleConfirm = () => {
     const id = addPost({
       location: form.location,
+      locationArea: form.locationArea || undefined,
       anonymous: form.anonymous,
       posterName: form.anonymous ? null : form.posterName.trim(),
       jobTitle: form.anonymous ? null : (form.jobTitle || null),
@@ -160,16 +174,33 @@ export default function PostFormPage() {
       <section className={sectionCard}>
         <h2 className={sectionTitle}>基本情報</h2>
 
+        {/* 拠点エリア */}
+        <div className="mb-6">
+          <label className={fieldLabel}>拠点エリア<span className="text-red-500">{requiredMark}</span></label>
+          <select
+            value={form.locationArea}
+            onChange={(e) => setLocationArea(e.target.value as LocationArea | "")}
+            className={inputBase}
+          >
+            <option value="">選択してください</option>
+            {LOCATION_AREAS.map((area) => (
+              <option key={area} value={area}>{LOCATION_AREA_LABELS[area]}</option>
+            ))}
+          </select>
+          {errors.locationArea && <p className="mt-1.5 text-[13px] text-red-500">{errors.locationArea}</p>}
+        </div>
+
         {/* 事業所名 */}
         <div className="mb-6">
           <label className={fieldLabel}>事業所名<span className="text-red-500">{requiredMark}</span></label>
           <select
             value={form.location}
             onChange={(e) => set("location", e.target.value)}
-            className={inputBase}
+            disabled={!form.locationArea}
+            className={`${inputBase} disabled:cursor-not-allowed disabled:bg-[#F5F2EF] disabled:text-[#B0A9A2]`}
           >
             <option value="">選択してください</option>
-            {LOCATIONS.map((loc) => (
+            {locationOptions.map((loc) => (
               <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>

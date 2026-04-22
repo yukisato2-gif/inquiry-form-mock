@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
-  Post, Status, Role, Category, Urgency, ExpectedAction,
+  Post, Status, Role, Category, Urgency, ExpectedAction, LocationArea,
   AdminUser, FlowStage, ResponsePolicy, AssignRecord, ActionLogEntry, FlowRecord,
 } from "@/types";
 import { mockPosts } from "@/data/mockPosts";
@@ -49,6 +49,7 @@ function normalizePosts(posts: Post[]): Post[] {
 
 interface PostDraft {
   location: string;
+  locationArea?: LocationArea;
   anonymous: boolean;
   posterName: string | null;
   jobTitle: string | null;
@@ -130,6 +131,7 @@ export const useAppStore = create<AppState>()(
           category: draft.category,
           body: draft.body,
           location: draft.location,
+          locationArea: draft.locationArea,
           status: "RECEIVED",
           memo: "",
           createdAt: now,
