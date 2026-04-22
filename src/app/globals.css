@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── コーラル / サーモン系プライマリ ── */
+  --color-primary-50: #FFF5F3;
+  --color-primary-100: #FFE8E4;
+  --color-primary-200: #FFCBC2;
+  --color-primary-300: #FFA99C;
+  --color-primary-400: #F08978;
+  --color-primary-500: #E07060;
+  --color-primary-600: #D05A4A;
+  --color-primary-700: #B84A3C;
+
+  /* ── ミントグリーン補助 ── */
+  --color-mint-50: #F0FAF7;
+  --color-mint-100: #D1F0E8;
+  --color-mint-500: #5BB5A2;
+  --color-mint-600: #4A9E8C;
+
+  /* ── やわらかい背景・枠線 ── */
+  --color-surface: #FAF8F6;
+  --color-border: #D5D0CB;
+}
+
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ラベル内のsr-only radioがフォーカスされた際のスクロールジャンプを防止 */
+input.sr-only[type="radio"] {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: #2D3748;
+}
