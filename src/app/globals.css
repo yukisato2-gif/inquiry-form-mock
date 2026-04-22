@@ -35,6 +35,6 @@ input.sr-only[type="radio"] {
 }
 
 body {
-  background-color: var(--color-surface);
+  background-color: #eee8e8;
   color: #2D3748;
 }

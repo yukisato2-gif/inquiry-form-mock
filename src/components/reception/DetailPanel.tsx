@@ -26,7 +26,7 @@ interface DetailPanelProps {
 const URGENCY_STYLES: Record<Urgency, { dot: string; bg: string; text: string }> = {
   urgent:   { dot: "bg-red-500",   bg: "bg-red-50",    text: "text-red-600" },
   normal:   { dot: "bg-[#9B9590]", bg: "bg-[#F5F2EF]", text: "text-[#4A4540]" },
-  proposal: { dot: "bg-gray-400",  bg: "bg-gray-100",   text: "text-gray-600" },
+  proposal: { dot: "bg-gray-400",  bg: "bg-gray-100",   text: "text-gray-700" },
 };
 
 const POLICIES: ResponsePolicy[] = ["respond", "observe", "inform_only"];
@@ -341,7 +341,7 @@ export default function DetailPanel({ post, onClose }: DetailPanelProps) {
                 受領確認する
               </button>
               {!canReceive && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-600">
                   受領確認はヘルスケア事業部のみ実行できます
                 </p>
               )}

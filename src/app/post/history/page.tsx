@@ -6,10 +6,10 @@ import { CATEGORY_LABELS, POSTER_STATUS_LABELS } from "@/lib/constants";
 import type { Status } from "@/types";
 
 const STATUS_DOT: Record<Status, string> = {
-  RECEIVED: "bg-[#B0A9A2]",
-  CONFIRMED: "bg-primary-400",
-  ESCALATED: "bg-amber-400",
-  NOTED: "bg-primary-400",
+  RECEIVED: "bg-[#a6cc39]",
+  CONFIRMED: "bg-[#f8b501]",
+  ESCALATED: "bg-[#5cbeb4]",
+  NOTED: "bg-[#f8b501]",
 };
 
 export default function HistoryPage() {
@@ -29,7 +29,7 @@ export default function HistoryPage() {
       </div>
 
       {sorted.length === 0 ? (
-        <div className="rounded-xl border-[1.5px] border-border bg-white px-5 py-12 text-center">
+        <div className="rounded-xl border-[1.5px] border-border bg-white px-5 py-12 text-center shadow-sm">
           <p className="text-[14px] text-[#9B9590]">まだ投稿はありません</p>
           <Link
             href="/post"
@@ -39,7 +39,7 @@ export default function HistoryPage() {
           </Link>
         </div>
       ) : (
-        <div className="rounded-xl border-[1.5px] border-border bg-white">
+        <div className="rounded-xl border-[1.5px] border-border bg-white shadow-sm">
           {/* ── PC: テーブル表示 ── */}
           <table className="hidden w-full sm:table">
             <thead>

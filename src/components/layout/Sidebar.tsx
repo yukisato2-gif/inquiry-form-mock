@@ -79,7 +79,7 @@ export default function Sidebar() {
                       href={item.href}
                       className={`relative block rounded-lg py-2.5 pr-3 pl-4 text-sm transition-colors ${
                         active
-                          ? "bg-primary-50 font-semibold text-primary-700"
+                          ? "bg-primary-50 font-bold text-primary-700"
                           : "text-[#6B6560] hover:bg-[#F5F2EF] hover:text-[#4A4540]"
                       }`}
                     >

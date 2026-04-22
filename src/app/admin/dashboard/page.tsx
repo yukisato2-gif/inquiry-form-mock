@@ -140,7 +140,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── 担当者向けサマリー ── */}
-      <div className="mb-6 rounded-xl border-[1.5px] border-border bg-white p-5">
+      <div className="mb-6 rounded-xl border-[1.5px] border-border bg-white p-5 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-[14px] font-bold text-[#2D3748]">
@@ -186,7 +186,7 @@ export default function DashboardPage() {
           {/* 対応中 */}
           <div className="rounded-xl border-[1.5px] border-border bg-gray-50 px-4 py-3">
             <p className="text-[11px] font-medium text-[#9B9590]">対応中</p>
-            <p className="mt-1 text-[22px] font-bold text-gray-600">{mySummary.inProgress}</p>
+            <p className="mt-1 text-[22px] font-bold text-gray-700">{mySummary.inProgress}</p>
           </div>
 
           {/* 対応完了 */}
@@ -195,7 +195,7 @@ export default function DashboardPage() {
           }`}>
             <p className="text-[11px] font-medium text-[#9B9590]">対応完了</p>
             <p className={`mt-1 text-[22px] font-bold ${
-              mySummary.completed > 0 ? "text-gray-500" : "text-[#C0BAB4]"
+              mySummary.completed > 0 ? "text-gray-600" : "text-[#C0BAB4]"
             }`}>
               {mySummary.completed}
             </p>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── 直近の投稿 ── */}
-      <div className="rounded-xl border-[1.5px] border-border bg-white p-5">
+      <div className="rounded-xl border-[1.5px] border-border bg-white p-5 shadow-sm">
         <h3 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-[#9B9590]">
           直近の投稿
         </h3>

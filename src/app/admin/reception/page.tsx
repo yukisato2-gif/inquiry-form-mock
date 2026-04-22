@@ -42,7 +42,7 @@ const STATUS_BADGE_COLORS: Record<Status, string> = {
 const URGENCY_BADGE: Record<Urgency, string> = {
   urgent: "bg-red-50 text-red-600",
   normal: "bg-[#F5F2EF] text-[#9B9590]",
-  proposal: "bg-gray-100 text-gray-600",
+  proposal: "bg-gray-100 text-gray-700",
 };
 
 type ViewFilter = "all" | "mine" | "unconfirmed" | "urgent" | "in_progress";
@@ -335,7 +335,7 @@ export default function ReceptionPage() {
         </div>
 
         {/* テーブル */}
-        <div className="rounded-xl border-[1.5px] border-border bg-white">
+        <div className="rounded-xl border-[1.5px] border-border bg-white shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-[#F5F2EF] text-left text-[12px] font-bold text-[#9B9590]">

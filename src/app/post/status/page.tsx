@@ -174,7 +174,7 @@ function StatusContent() {
             <dl className="space-y-3.5 rounded-xl border-[1.5px] border-border bg-surface p-5 text-[14px]">
               <div>
                 <dt className="text-[12px] font-medium text-[#9B9590]">受付番号</dt>
-                <dd className="mt-0.5 font-semibold text-[#2D3748]">{result.id}</dd>
+                <dd className="mt-0.5 font-bold text-[#2D3748]">{result.id}</dd>
               </div>
               <div>
                 <dt className="text-[12px] font-medium text-[#9B9590]">カテゴリ</dt>
