@@ -116,25 +116,35 @@ export const LOCATION_AREA_LABELS: Record<LocationArea, string> = {
 
 export const LOCATION_AREAS: LocationArea[] = ["tokyo", "kanagawa", "saitama", "chiba"];
 
-/** 拠点エリアごとの拠点一覧（投稿フォームの事業所名プルダウン用）
- *  保存値が既存集計マスタ LOCATIONS と一致するよう、LOCATIONS に存在する名称のみを採用する。 */
+/** 拠点エリアごとの拠点一覧（投稿フォームの事業所名プルダウン用） */
 export const LOCATIONS_BY_AREA: Record<LocationArea, string[]> = {
   tokyo: [
     "AMANEKU八王子美山町",
+    "AMANEKU八王子美山町B棟",
     "AMANEKU青梅谷野",
     "AMANEKU八王子宮下町",
+    "AMANEKU八王子中野山王",
     "AMANEKU八王子川口町A棟",
     "AMANEKU八王子川口町B棟",
     "AMANEKU八王子川口町C棟",
     "AMANEKU八王子田町",
+    "AMANEKU昭島田中町",
+    "AMANEKU練馬大泉学園",
     "AMANEKU葛飾東金町A棟",
     "AMANEKU葛飾東金町B棟",
     "AMANEKU葛飾西水元",
   ],
   kanagawa: [
     "AMANEKU南足柄",
+    "AMANEKU南足柄飯沢",
+    "AMANEKU南足柄広町",
+    "AMANEKU平塚",
     "AMANEKU茅ヶ崎萩園",
+    "AMANEKU川崎麻生A棟",
+    "AMANEKU川崎麻生B棟",
     "AMANEKU町田野津田町",
+    "AMANEKU横浜戸塚原宿A棟",
+    "AMANEKU横浜戸塚原宿B棟",
     "AMANEKU横浜上飯田町",
     "AMANEKU横浜戸塚町",
   ],
@@ -147,10 +157,20 @@ export const LOCATIONS_BY_AREA: Record<LocationArea, string[]> = {
     "AMANEKU鶴ヶ島藤金",
     "AMANEKU野田中里",
     "AMANEKU野田琴平",
+    "AMANEKU野田川間",
   ],
   chiba: [
+    "AMANEKU花見川",
+    "AMANEKU千葉矢作町A棟",
+    "AMANEKU千葉矢作町B棟",
     "AMANEKU袖ヶ浦横田",
+    "AMANEKU千葉大木戸町A棟",
+    "AMANEKU千葉大木戸町B棟",
     "AMANEKU千葉仁戸名町",
+    "AMANEKU千葉加曽利町A棟",
+    "AMANEKU千葉加曽利町B棟",
+    "AMANEKU千葉加曽利町C棟",
+    "AMANEKU千葉生実町",
   ],
 };
 
