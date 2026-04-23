@@ -80,13 +80,20 @@ const FLOW_TO_STATUS: Record<FlowStage, Status> = {
   reported: "NOTED",
 };
 
+/** 新規投稿時に発行する識別子セット */
+export interface NewPostIdentifiers {
+  id: string;               // 内部キー（= 受付番号と同値）
+  inquiryNumber: string;    // 受付番号（管理用）
+  confirmationCode: string; // 本人確認コード
+}
+
 interface AppState {
   posts: Post[];
   currentRole: Role;
   nextId: number;
   currentAdmin: AdminUser;
 
-  addPost: (draft: PostDraft) => string;
+  addPost: (draft: PostDraft) => NewPostIdentifiers;
   advanceStage: (id: string, stage: FlowStage) => void;
   revertStage: (id: string, stage: FlowStage) => void;
   setResponsePolicy: (id: string, policy: ResponsePolicy) => void;
@@ -100,13 +107,28 @@ interface AppState {
   setCurrentAdmin: (admin: AdminUser) => void;
 }
 
+/** 見間違えにくい 32 文字（I/O/1/0 を除外） */
+const SAFE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
 function generateId(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
   for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += SAFE_CHARS[Math.floor(Math.random() * SAFE_CHARS.length)];
   }
   return `V-${code}`;
+}
+
+/** 本人確認コード（8文字）を重複チェック込みで発行 */
+function generateConfirmationCode(existing: Set<string>): string {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    let code = "";
+    for (let i = 0; i < 8; i++) {
+      code += SAFE_CHARS[Math.floor(Math.random() * SAFE_CHARS.length)];
+    }
+    if (!existing.has(code)) return code;
+  }
+  // 32^8 ≈ 1.1兆通り。20回連続衝突は事実上起きないが保険で時刻付加
+  return `${Date.now().toString(36).toUpperCase().slice(-4)}XXXX`.slice(0, 8);
 }
 
 /** mockPosts のディープコピーを生成（参照汚染を防止） */
@@ -124,10 +146,17 @@ export const useAppStore = create<AppState>()(
 
       addPost: (draft) => {
         const id = generateId();
+        const inquiryNumber = id; // 既存 id と同値で保持（管理画面の id 参照を維持）
+        const existingCodes = new Set(
+          get().posts.map((p) => p.confirmationCode).filter((c): c is string => !!c),
+        );
+        const confirmationCode = generateConfirmationCode(existingCodes);
         const now = new Date().toISOString();
         const assignment = CATEGORY_ASSIGNMENTS[draft.category];
         const newPost: Post = {
           id,
+          inquiryNumber,
+          confirmationCode,
           category: draft.category,
           body: draft.body,
           location: draft.location,
@@ -155,7 +184,7 @@ export const useAppStore = create<AppState>()(
           posts: [newPost, ...s.posts],
           nextId: s.nextId + 1,
         }));
-        return id;
+        return { id, inquiryNumber, confirmationCode };
       },
 
       advanceStage: (id, stage) => {

@@ -74,7 +74,9 @@ export type ResponsePolicy = "respond" | "observe" | "inform_only";
  * 新フォーム項目は optional。既存モックデータとの互換性を保つ。
  */
 export interface Post {
-  id: string;                         // "V-001" 形式の受付番号
+  id: string;                         // 内部ユニークキー（既存互換のため "V-XXXXXX" 形式を継続）
+  inquiryNumber?: string;             // 受付番号（本社管理用）。未設定の旧データは id をフォールバック表示
+  confirmationCode?: string;          // 投稿者本人確認コード（8文字）。投稿者画面の検索はこれでのみ行う
   category: Category;
   body: string;
   location: string | null;            // 事業所名（拠点）

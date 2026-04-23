@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { Suspense } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { CATEGORY_LABELS } from "@/lib/constants";
@@ -110,26 +109,24 @@ function StepIndicator({ post }: { post: Post }) {
   );
 }
 
+/** 入力された確認コードを正規化（英数字以外除去 + 大文字化） */
+function normalizeCode(input: string): string {
+  return input.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+}
+
 function StatusContent() {
-  const params = useSearchParams();
   const posts = useAppStore((s) => s.posts);
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Post | null | undefined>(undefined);
 
-  useEffect(() => {
-    const idParam = params.get("id");
-    if (idParam) {
-      setQuery(idParam);
-      const found = posts.find(
-        (p) => p.id.toLowerCase() === idParam.toLowerCase(),
-      );
-      setResult(found ?? null);
-    }
-  }, [params, posts]);
-
   const handleSearch = () => {
+    const normalized = normalizeCode(query);
+    if (!normalized) {
+      setResult(null);
+      return;
+    }
     const found = posts.find(
-      (p) => p.id.toLowerCase() === query.trim().toLowerCase(),
+      (p) => p.confirmationCode && p.confirmationCode.toUpperCase() === normalized,
     );
     setResult(found ?? null);
   };
@@ -139,19 +136,23 @@ function StatusContent() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#2D3748]">状況の確認</h1>
         <p className="mt-2 text-[14px] leading-relaxed text-[#7A746E]">
-          受付番号を入力すると、投稿の状況を確認できます。
+          投稿後に発行された確認コードで、投稿の状況を確認できます。
         </p>
       </div>
 
       <div className="rounded-xl border-[1.5px] border-border bg-white p-5 shadow-sm sm:p-7">
+        <label className="mb-2 block text-[14px] font-medium text-[#4A4540]">
+          確認コード
+        </label>
         <div className="mb-6 flex gap-2">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="例: V-K8F3N2"
-            className="flex-1 rounded-lg border-[1.5px] border-border bg-white px-4 py-3 text-[15px] text-[#2D3748] placeholder:text-[#B0A9A2] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            placeholder="確認コードを入力してください"
+            autoComplete="off"
+            className="flex-1 rounded-lg border-[1.5px] border-border bg-white px-4 py-3 font-mono text-[15px] tracking-[0.1em] text-[#2D3748] placeholder:font-sans placeholder:tracking-normal placeholder:text-[#B0A9A2] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
           />
           <button
             onClick={handleSearch}
@@ -163,7 +164,7 @@ function StatusContent() {
 
         {result === null && (
           <p className="py-4 text-center text-[14px] text-[#9B9590]">
-            該当する投稿が見つかりませんでした
+            確認コードが見つかりませんでした。お手元のコードをもう一度ご確認ください。
           </p>
         )}
 
@@ -174,7 +175,7 @@ function StatusContent() {
             <dl className="space-y-3.5 rounded-xl border-[1.5px] border-border bg-surface p-5 text-[14px]">
               <div>
                 <dt className="text-[12px] font-medium text-[#9B9590]">受付番号</dt>
-                <dd className="mt-0.5 font-bold text-[#2D3748]">{result.id}</dd>
+                <dd className="mt-0.5 font-bold text-[#2D3748]">{result.inquiryNumber ?? result.id}</dd>
               </div>
               <div>
                 <dt className="text-[12px] font-medium text-[#9B9590]">カテゴリ</dt>

@@ -111,7 +111,7 @@ export default function PostFormPage() {
   const hasErrors = submitted && Object.keys(errors).length > 0;
 
   const handleConfirm = () => {
-    const id = addPost({
+    const { inquiryNumber, confirmationCode } = addPost({
       location: form.location,
       locationArea: form.locationArea || undefined,
       anonymous: form.anonymous,
@@ -125,7 +125,12 @@ export default function PostFormPage() {
       expectedAction: form.expectedAction as ExpectedAction,
       hasAttachment: form.hasAttachment,
     });
-    router.push(`/post/complete?id=${id}`);
+    // URLに載せず、完了画面だけに一時的に渡す
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("lastInquiryNumber", inquiryNumber);
+      sessionStorage.setItem("lastConfirmationCode", confirmationCode);
+    }
+    router.push("/post/complete");
   };
 
   return (
