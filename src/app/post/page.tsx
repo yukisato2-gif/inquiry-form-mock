@@ -274,31 +274,39 @@ export default function PostFormPage() {
         {/* カテゴリ */}
         <div className="mb-6">
           <p className={fieldLabel}>カテゴリ<span className="text-red-500">{requiredMark}</span></p>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          <div className="space-y-2.5">
             {CATEGORIES.map((c) => {
               const selected = form.category === c;
               return (
-                <div key={c}>
-                  <label
-                    className={`flex cursor-pointer items-center justify-center rounded-lg border-[2px] px-3 py-3 text-center text-[14px] font-medium transition-colors ${
+                <label key={c} className="flex cursor-pointer items-center gap-4">
+                  <input
+                    type="radio"
+                    name="category"
+                    value={c}
+                    checked={selected}
+                    onChange={() => set("category", c)}
+                    className="sr-only"
+                    tabIndex={-1}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[2px] transition-colors ${
+                      selected ? "border-primary-600" : "border-[#C0BAB4]"
+                    }`}
+                  >
+                    {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary-600" />}
+                  </span>
+                  <span
+                    className={`flex w-40 shrink-0 items-center justify-center rounded-lg border-[2px] px-3 py-2.5 text-[14px] font-medium transition-colors ${
                       selected ? choiceActive : choiceInactive
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="category"
-                      value={c}
-                      checked={selected}
-                      onChange={() => set("category", c)}
-                      className="sr-only"
-                      tabIndex={-1}
-                    />
                     {CATEGORY_LABELS[c]}
-                  </label>
-                  <p className="mt-2 px-1 text-[12px] leading-relaxed text-[#9B9590]">
+                  </span>
+                  <span className="text-sm leading-relaxed text-gray-600">
                     {CATEGORY_DESCRIPTIONS[c]}
-                  </p>
-                </div>
+                  </span>
+                </label>
               );
             })}
           </div>
