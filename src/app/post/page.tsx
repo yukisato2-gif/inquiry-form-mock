@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  CATEGORY_DESCRIPTIONS,
   LOCATION_AREAS,
   LOCATION_AREA_LABELS,
   LOCATIONS_BY_AREA,
@@ -277,23 +278,27 @@ export default function PostFormPage() {
             {CATEGORIES.map((c) => {
               const selected = form.category === c;
               return (
-                <label
-                  key={c}
-                  className={`flex cursor-pointer items-center justify-center rounded-lg border-[2px] px-3 py-3 text-center text-[14px] font-medium transition-colors ${
-                    selected ? choiceActive : choiceInactive
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="category"
-                    value={c}
-                    checked={selected}
-                    onChange={() => set("category", c)}
-                    className="sr-only"
-                    tabIndex={-1}
-                  />
-                  {CATEGORY_LABELS[c]}
-                </label>
+                <div key={c}>
+                  <label
+                    className={`flex cursor-pointer items-center justify-center rounded-lg border-[2px] px-3 py-3 text-center text-[14px] font-medium transition-colors ${
+                      selected ? choiceActive : choiceInactive
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="category"
+                      value={c}
+                      checked={selected}
+                      onChange={() => set("category", c)}
+                      className="sr-only"
+                      tabIndex={-1}
+                    />
+                    {CATEGORY_LABELS[c]}
+                  </label>
+                  <p className="mt-2 px-1 text-[12px] leading-relaxed text-[#9B9590]">
+                    {CATEGORY_DESCRIPTIONS[c]}
+                  </p>
+                </div>
               );
             })}
           </div>

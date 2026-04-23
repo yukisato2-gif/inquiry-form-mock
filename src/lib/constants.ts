@@ -14,6 +14,16 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 
 export const CATEGORIES: Category[] = Object.keys(CATEGORY_LABELS) as Category[];
 
+/** カテゴリごとの説明文（投稿フォームの選択補助用） */
+export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
+  safety: "事故の予兆、設備不備、夜間体制の不安",
+  quality: "ケアの方法への疑問、利用者様への不適切対応目撃",
+  labor: "慢性的な人手不足、過重労働、シフトの偏り",
+  relationship: "ハラスメント疑惑、職員間の深刻な対立",
+  policy: "本社の指示と現場の実態の乖離、ルールの形骸化",
+  other: "業務効率化のアイデア、ポジティブな提案",
+};
+
 /** カテゴリごとの想定対応ルート */
 export const CATEGORY_ROUTES: Record<Category, string[]> = {
   safety: ["エリア課長・課長代理", "ヘルスケア事業部"],
