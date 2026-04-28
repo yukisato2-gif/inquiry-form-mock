@@ -9,7 +9,7 @@ import {
   URGENCY_LABELS,
   POSTER_STATUS_LABELS,
 } from "@/lib/constants";
-import type { Status } from "@/types";
+import type { Category, Status } from "@/types";
 
 const STATUS_DOT: Record<Status, string> = {
   RECEIVED: "bg-[#a6cc39]",
@@ -25,6 +25,11 @@ export default function SiteManagerPostsPage() {
   const setCurrentSiteLocation = useAppStore((s) => s.setCurrentSiteLocation);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  // 絞り込みフィルタ（UI状態のみ。Zustand/localStorageには持たない）
+  const [filterMonth, setFilterMonth] = useState<string>("");
+  const [filterCategory, setFilterCategory] = useState<Category | "">("");
+  const [filterStatus, setFilterStatus] = useState<Status | "">("");
+
   // 未ログイン（拠点未割当）時は管理者ログイン画面へ強制リダイレクト
   useEffect(() => {
     if (!currentSiteLocation) {
@@ -32,8 +37,9 @@ export default function SiteManagerPostsPage() {
     }
   }, [currentSiteLocation, router]);
 
-  /** 選択拠点の投稿のみ。これ以外は一切扱わない（権限ガード） */
-  const filteredPosts = useMemo(() => {
+  /** 選択拠点の投稿のみ（権限ガードの基底配列）。
+   *  以後の候補生成・最終フィルタは必ずこの配列から派生させる。 */
+  const siteOnlyPosts = useMemo(() => {
     if (!currentSiteLocation) return [];
     return posts
       .filter((p) => p.location === currentSiteLocation)
@@ -42,6 +48,52 @@ export default function SiteManagerPostsPage() {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [posts, currentSiteLocation]);
+
+  /** 投稿月の選択肢（YYYY-MM、降順）。担当拠点の投稿からのみ生成。 */
+  const monthOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of siteOnlyPosts) {
+      set.add(p.createdAt.slice(0, 7));
+    }
+    return Array.from(set).sort().reverse();
+  }, [siteOnlyPosts]);
+
+  /** カテゴリの選択肢。担当拠点の投稿からのみ生成。 */
+  const categoryOptions = useMemo(() => {
+    const set = new Set<Category>();
+    for (const p of siteOnlyPosts) set.add(p.category);
+    return Array.from(set);
+  }, [siteOnlyPosts]);
+
+  /** ステータスの選択肢。担当拠点の投稿からのみ生成。 */
+  const statusOptions = useMemo(() => {
+    const set = new Set<Status>();
+    for (const p of siteOnlyPosts) set.add(p.status);
+    return Array.from(set);
+  }, [siteOnlyPosts]);
+
+  /** 担当拠点フィルタ → 月 → カテゴリ → ステータス の順で絞り込み */
+  const filteredPosts = useMemo(() => {
+    return siteOnlyPosts.filter((p) => {
+      if (filterMonth && p.createdAt.slice(0, 7) !== filterMonth) return false;
+      if (filterCategory && p.category !== filterCategory) return false;
+      if (filterStatus && p.status !== filterStatus) return false;
+      return true;
+    });
+  }, [siteOnlyPosts, filterMonth, filterCategory, filterStatus]);
+
+  const hasActiveFilter = !!(filterMonth || filterCategory || filterStatus);
+
+  const resetFilters = () => {
+    setFilterMonth("");
+    setFilterCategory("");
+    setFilterStatus("");
+  };
+
+  const formatMonth = (ym: string) => {
+    const [y, m] = ym.split("-");
+    return `${y}年${parseInt(m, 10)}月`;
+  };
 
   /** 詳細表示は filteredPosts からのみ取得 = 他拠点IDをstateに入れても見えない */
   const selectedPost = useMemo(
@@ -69,7 +121,9 @@ export default function SiteManagerPostsPage() {
             担当拠点：{currentSiteLocation}
           </h1>
           <p className="mt-1 text-[13px] text-[#7A746E]">
-            この拠点の投稿のみ表示しています（{filteredPosts.length} 件）
+            {hasActiveFilter
+              ? `条件に一致する投稿を表示しています（${filteredPosts.length} 件）`
+              : `この拠点の投稿のみ表示しています（${filteredPosts.length} 件）`}
           </p>
         </div>
         <button
@@ -81,10 +135,83 @@ export default function SiteManagerPostsPage() {
         </button>
       </div>
 
+      {/* ── 絞り込み ── */}
+      <div className="mb-5 flex flex-wrap items-end gap-3 rounded-xl border-[1.5px] border-border bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="filter-month" className="text-[11px] font-medium text-[#9B9590]">
+            投稿月
+          </label>
+          <select
+            id="filter-month"
+            value={filterMonth}
+            onChange={(e) => setFilterMonth(e.target.value)}
+            className="rounded-lg border-[1.5px] border-border bg-white px-3 py-2 text-[13px] text-[#2D3748] focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">すべて</option>
+            {monthOptions.map((ym) => (
+              <option key={ym} value={ym}>
+                {formatMonth(ym)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="filter-category" className="text-[11px] font-medium text-[#9B9590]">
+            カテゴリ
+          </label>
+          <select
+            id="filter-category"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value as Category | "")}
+            className="rounded-lg border-[1.5px] border-border bg-white px-3 py-2 text-[13px] text-[#2D3748] focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">すべて</option>
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>
+                {CATEGORY_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="filter-status" className="text-[11px] font-medium text-[#9B9590]">
+            ステータス
+          </label>
+          <select
+            id="filter-status"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as Status | "")}
+            className="rounded-lg border-[1.5px] border-border bg-white px-3 py-2 text-[13px] text-[#2D3748] focus:border-primary-400 focus:outline-none"
+          >
+            <option value="">すべて</option>
+            {statusOptions.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={resetFilters}
+          disabled={!hasActiveFilter}
+          className="rounded-lg border-[1.5px] border-border bg-white px-4 py-2 text-[13px] font-medium text-[#6B6560] transition-colors hover:border-[#C0BAB4] hover:bg-[#F5F2EF] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-border disabled:hover:bg-white"
+        >
+          リセット
+        </button>
+      </div>
+
       {/* ── 一覧 ── */}
       {filteredPosts.length === 0 ? (
         <div className="rounded-xl border-[1.5px] border-border bg-white px-5 py-12 text-center shadow-sm">
-          <p className="text-[14px] text-[#9B9590]">この拠点の投稿はまだありません</p>
+          <p className="text-[14px] text-[#9B9590]">
+            {hasActiveFilter
+              ? "条件に一致する投稿はありません"
+              : "この拠点の投稿はまだありません"}
+          </p>
         </div>
       ) : (
         <div className="rounded-xl border-[1.5px] border-border bg-white shadow-sm">
