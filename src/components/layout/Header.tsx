@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/useAppStore";
 import type { Role } from "@/types";
 
@@ -18,12 +18,28 @@ const ROLE_DEFAULT_PATH: Record<string, string> = {
   management: "/admin",
 };
 
+/** 本社管理者ログイン後画面でのみ Header にログアウトボタンを出す。
+ *  ホーム長画面 (/admin/site-manager/posts) はページ内に既存のログアウトボタンがあるため除外。 */
+const SHOW_LOGOUT_PATHS = new Set([
+  "/admin/reception",
+  "/admin/dashboard",
+  "/admin/settings",
+]);
+
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const currentRole = useAppStore((s) => s.currentRole);
   const setRole = useAppStore((s) => s.setRole);
+  const setCurrentSiteLocation = useAppStore((s) => s.setCurrentSiteLocation);
 
   const displayValue = currentRole === "management" ? "reception" : currentRole;
+  const showLogout = SHOW_LOGOUT_PATHS.has(pathname);
+
+  const handleLogout = () => {
+    setCurrentSiteLocation(null);
+    router.push("/admin");
+  };
 
   return (
     <header className="z-50 border-b border-border bg-white">
@@ -62,6 +78,16 @@ export default function Header() {
               </option>
             ))}
           </select>
+
+          {showLogout && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border-[1.5px] border-border bg-white px-3 py-1.5 text-[13px] font-medium text-[#6B6560] transition-colors hover:border-[#C0BAB4] hover:bg-[#F5F2EF]"
+            >
+              ログアウト
+            </button>
+          )}
         </div>
       </div>
     </header>
