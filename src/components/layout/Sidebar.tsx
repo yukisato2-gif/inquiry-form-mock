@@ -49,8 +49,12 @@ function getGroups(role: Role): NavGroup[] {
   return ADMIN_GROUPS;
 }
 
-/** 左メニューを非表示にするパス（管理者ログイン画面・ガード画面） */
-const HIDE_SIDEBAR_PATHS = new Set(["/admin", "/admin/site-manager"]);
+/** 左メニューを非表示にするパス（管理者ログイン画面・ガード画面・拠点管理者の投稿一覧） */
+const HIDE_SIDEBAR_PATHS = new Set([
+  "/admin",
+  "/admin/site-manager",
+  "/admin/site-manager/posts",
+]);
 
 export default function Sidebar() {
   const pathname = usePathname();
