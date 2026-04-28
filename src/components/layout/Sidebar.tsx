@@ -22,7 +22,6 @@ const POSTER_GROUPS: NavGroup[] = [
     section: "投稿メニュー",
     items: [
       { label: "投稿する", href: "/post", matchPrefix: "/post/complete" },
-      { label: "投稿履歴", href: "/post/history" },
       { label: "状況を確認", href: "/post/status" },
     ],
   },
