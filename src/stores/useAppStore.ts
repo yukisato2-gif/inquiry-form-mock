@@ -92,6 +92,9 @@ interface AppState {
   currentRole: Role;
   nextId: number;
   currentAdmin: AdminUser;
+  /** 拠点管理者（ホーム長）モックで選択中の拠点。null の場合は未選択。
+   *  セッション内のみ保持し、永続化はしない（partialize 対象外）。 */
+  currentSiteLocation: string | null;
 
   addPost: (draft: PostDraft) => NewPostIdentifiers;
   advanceStage: (id: string, stage: FlowStage) => void;
@@ -105,6 +108,7 @@ interface AppState {
   resetPosts: () => void;
   setRole: (role: Role) => void;
   setCurrentAdmin: (admin: AdminUser) => void;
+  setCurrentSiteLocation: (loc: string | null) => void;
 }
 
 /** 見間違えにくい 32 文字（I/O/1/0 を除外） */
@@ -143,6 +147,7 @@ export const useAppStore = create<AppState>()(
       currentRole: "poster" as Role,
       nextId: mockPosts.length + 1,
       currentAdmin: MOCK_ADMIN_USERS[0],
+      currentSiteLocation: null,
 
       addPost: (draft) => {
         const id = generateId();
@@ -328,6 +333,7 @@ export const useAppStore = create<AppState>()(
       },
       setRole: (role) => set({ currentRole: role }),
       setCurrentAdmin: (admin) => set({ currentAdmin: admin }),
+      setCurrentSiteLocation: (loc) => set({ currentSiteLocation: loc }),
     }),
     {
       name: "inquiry-form-mock-store",

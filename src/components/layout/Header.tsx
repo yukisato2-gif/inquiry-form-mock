@@ -9,7 +9,7 @@ import type { Role } from "@/types";
 
 const ROLE_OPTIONS: { value: Role; label: string }[] = [
   { value: "poster", label: "投稿者" },
-  { value: "reception", label: "本社" },
+  { value: "reception", label: "管理者" },
 ];
 
 /** テストユーザー候補（3部署の dept_owner） */
@@ -20,8 +20,8 @@ const TEST_USERS = MOCK_ADMIN_USERS.filter(
 /** ロール → デフォルト画面パス */
 const ROLE_DEFAULT_PATH: Record<string, string> = {
   poster: "/post",
-  reception: "/admin/dashboard",
-  management: "/admin/dashboard",
+  reception: "/admin",
+  management: "/admin",
 };
 
 export default function Header() {
