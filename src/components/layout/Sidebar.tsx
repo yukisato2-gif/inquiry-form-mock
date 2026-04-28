@@ -49,10 +49,18 @@ function getGroups(role: Role): NavGroup[] {
   return ADMIN_GROUPS;
 }
 
+/** 左メニューを非表示にするパス（管理者ログイン画面・ガード画面） */
+const HIDE_SIDEBAR_PATHS = new Set(["/admin", "/admin/site-manager"]);
+
 export default function Sidebar() {
   const pathname = usePathname();
   const currentRole = useAppStore((s) => s.currentRole);
   const groups = getGroups(currentRole);
+
+  // ログイン前・ガード画面では左メニュー自体を表示しない
+  if (HIDE_SIDEBAR_PATHS.has(pathname)) {
+    return null;
+  }
 
   const isActive = (item: NavItem) =>
     pathname === item.href ||
