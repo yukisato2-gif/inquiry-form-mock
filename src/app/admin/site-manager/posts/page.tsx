@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/useAppStore";
 import {
@@ -26,10 +25,10 @@ export default function SiteManagerPostsPage() {
   const setCurrentSiteLocation = useAppStore((s) => s.setCurrentSiteLocation);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // 拠点未選択時は選択画面に戻す（直接URLアクセスでも他拠点を見せない）
+  // 未ログイン（拠点未割当）時は管理者ログイン画面へ強制リダイレクト
   useEffect(() => {
     if (!currentSiteLocation) {
-      router.replace("/admin/site-manager");
+      router.replace("/admin");
     }
   }, [currentSiteLocation, router]);
 
@@ -50,10 +49,10 @@ export default function SiteManagerPostsPage() {
     [filteredPosts, selectedId],
   );
 
-  const switchLocation = () => {
+  const logout = () => {
     setCurrentSiteLocation(null);
     setSelectedId(null);
-    router.push("/admin/site-manager");
+    router.push("/admin");
   };
 
   if (!currentSiteLocation) {
@@ -67,7 +66,7 @@ export default function SiteManagerPostsPage() {
         <div>
           <p className="text-[12px] text-[#9B9590]">拠点管理者（ホーム長）</p>
           <h1 className="mt-0.5 text-2xl font-bold text-[#2D3748]">
-            {currentSiteLocation}
+            担当拠点：{currentSiteLocation}
           </h1>
           <p className="mt-1 text-[13px] text-[#7A746E]">
             この拠点の投稿のみ表示しています（{filteredPosts.length} 件）
@@ -75,10 +74,10 @@ export default function SiteManagerPostsPage() {
         </div>
         <button
           type="button"
-          onClick={switchLocation}
+          onClick={logout}
           className="rounded-lg border-[1.5px] border-border bg-white px-4 py-2 text-[13px] font-medium text-[#6B6560] transition-colors hover:border-[#C0BAB4] hover:bg-[#F5F2EF]"
         >
-          拠点を変更
+          ログアウト
         </button>
       </div>
 
@@ -257,17 +256,9 @@ export default function SiteManagerPostsPage() {
         </section>
       )}
 
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <p className="text-[12px] leading-relaxed text-[#9B9590]">
-          ※この画面はモックです。本番ではログイン認証とサーバー側の権限制御が必要です。
-        </p>
-        <Link
-          href="/admin"
-          className="shrink-0 text-[12px] font-medium text-[#9B9590] transition-colors hover:text-[#4A4540]"
-        >
-          管理者メニューに戻る
-        </Link>
-      </div>
+      <p className="mt-6 text-[12px] leading-relaxed text-[#9B9590]">
+        ※この画面はモックです。本番ではログイン認証とサーバー側の権限制御が必要です。
+      </p>
     </main>
   );
 }
