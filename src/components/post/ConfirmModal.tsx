@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Category, Urgency, ExpectedAction, LocationArea } from "@/types";
 import {
   CATEGORY_LABELS,
@@ -39,6 +40,8 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export default function ConfirmModal({ form, onConfirm, onCancel }: ConfirmModalProps) {
+  const [confirmedReceipt, setConfirmedReceipt] = useState(false);
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 px-4 sm:items-center">
       <div className="w-full max-w-lg rounded-t-2xl bg-white px-6 pb-6 pt-5 shadow-xl sm:max-h-[85vh] sm:overflow-y-auto sm:rounded-2xl">
@@ -87,6 +90,26 @@ export default function ConfirmModal({ form, onConfirm, onCancel }: ConfirmModal
           )}
         </div>
 
+        {/* 受付番号控えの注意 */}
+        <div className="mt-5 rounded-xl border-[1.5px] border-amber-200 bg-amber-50 px-5 py-4">
+          <p className="text-[13px] leading-relaxed text-[#92400E]">
+            ※送信後、受付番号（確認番号）が表示されます。
+            <br />
+            お問い合わせや状況確認に必要となるため、
+            <br />
+            必ずスクリーンショットまたはメモで控えてください。
+          </p>
+          <label className="mt-3 flex cursor-pointer items-start gap-2 text-[14px] text-[#4A4540]">
+            <input
+              type="checkbox"
+              checked={confirmedReceipt}
+              onChange={(e) => setConfirmedReceipt(e.target.checked)}
+              className="mt-[3px] h-[18px] w-[18px] shrink-0 rounded border-border text-primary-600 focus:ring-primary-200"
+            />
+            <span>受付番号を控えることを確認しました</span>
+          </label>
+        </div>
+
         <div className="mt-5 flex gap-3">
           <button
             onClick={onCancel}
@@ -96,7 +119,8 @@ export default function ConfirmModal({ form, onConfirm, onCancel }: ConfirmModal
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 rounded-lg bg-primary-600 px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-primary-700"
+            disabled={!confirmedReceipt}
+            className="flex-1 rounded-lg bg-primary-600 px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-600/40 disabled:hover:bg-primary-600/40"
           >
             送信する
           </button>
