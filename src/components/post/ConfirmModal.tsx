@@ -92,12 +92,10 @@ export default function ConfirmModal({ form, onConfirm, onCancel }: ConfirmModal
 
         {/* 受付番号控えの注意 */}
         <div className="mt-5 rounded-xl border-[1.5px] border-amber-200 bg-amber-50 px-5 py-4">
-          <p className="text-[13px] leading-relaxed text-[#92400E]">
+          <p className="text-[13px] leading-relaxed text-[#92400E] [word-break:keep-all] [overflow-wrap:anywhere] [text-wrap:pretty]">
             ※送信後、受付番号（確認番号）が表示されます。
             <br />
-            お問い合わせや状況確認に必要となるため、
-            <br />
-            必ずスクリーンショットまたはメモで控えてください。
+            お問い合わせや状況確認に必要となるため、必ずスクリーンショットまたはメモで控えてください。
           </p>
           <label className="mt-3 flex cursor-pointer items-start gap-2 text-[14px] text-[#4A4540]">
             <input
