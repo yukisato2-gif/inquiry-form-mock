@@ -3,8 +3,83 @@
 import { useState } from "react";
 import { Suspense } from "react";
 import { useAppStore } from "@/stores/useAppStore";
-import { CATEGORY_LABELS } from "@/lib/constants";
-import type { Post, FlowStage } from "@/types";
+import {
+  CATEGORY_LABELS,
+  CATEGORIES,
+  URGENCY_LABELS,
+  URGENCIES,
+  LOCATION_AREAS,
+  LOCATION_AREA_LABELS,
+  LOCATIONS_BY_AREA,
+  POSTER_STATUS_LABELS,
+} from "@/lib/constants";
+import type { Post, FlowStage, Category, Urgency, LocationArea } from "@/types";
+
+/** 確認コードを忘れた場合の検索：時間帯マスタ */
+const TIME_SLOT_OPTIONS = [
+  { value: "", label: "選択してください" },
+  { value: "morning", label: "朝" },
+  { value: "noon", label: "昼" },
+  { value: "evening", label: "夕方" },
+  { value: "night", label: "夜" },
+  { value: "midnight", label: "深夜" },
+  { value: "unknown", label: "不明" },
+] as const;
+
+type TimeSlot = (typeof TIME_SLOT_OPTIONS)[number]["value"];
+
+/** 投稿時刻が指定の時間帯に該当するか判定（unknown / 空は常に true） */
+function isInTimeSlot(hour: number, slot: TimeSlot): boolean {
+  switch (slot) {
+    case "morning":  return hour >= 5  && hour <= 10;
+    case "noon":     return hour >= 11 && hour <= 14;
+    case "evening":  return hour >= 15 && hour <= 17;
+    case "night":    return hour >= 18 && hour <= 21;
+    case "midnight": return hour >= 22 || hour <= 4;
+    default:         return true; // "" | "unknown" → フィルタなし
+  }
+}
+
+interface ForgotSearchForm {
+  date: string;                    // YYYY-MM-DD（任意）
+  timeSlot: TimeSlot;
+  locationArea: LocationArea | "";
+  location: string;
+  category: Category | "";
+  urgency: Urgency | "";
+  bodyKeyword: string;
+}
+
+const FORGOT_INITIAL: ForgotSearchForm = {
+  date: "",
+  timeSlot: "",
+  locationArea: "",
+  location: "",
+  category: "",
+  urgency: "",
+  bodyKeyword: "",
+};
+
+/** 入力条件にマッチする投稿を絞り込み（全て任意、入力された項目のみAND評価） */
+function searchByForgotForm(posts: Post[], form: ForgotSearchForm): Post[] {
+  return posts.filter((p) => {
+    if (form.date) {
+      const d = new Date(p.createdAt);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      if (`${yyyy}-${mm}-${dd}` !== form.date) return false;
+    }
+    if (form.timeSlot && !isInTimeSlot(new Date(p.createdAt).getHours(), form.timeSlot)) return false;
+    if (form.locationArea && p.locationArea !== form.locationArea) return false;
+    if (form.location && p.location !== form.location) return false;
+    if (form.category && p.category !== form.category) return false;
+    if (form.urgency && p.urgency !== form.urgency) return false;
+    const kw = form.bodyKeyword.trim().toLowerCase();
+    if (kw && !p.body.toLowerCase().includes(kw)) return false;
+    return true;
+  });
+}
 
 /** 投稿者向け5段階ステップ定義 */
 const POSTER_STEPS: { stage: FlowStage | "initial"; before: string; after: string }[] = [
@@ -119,6 +194,27 @@ function StatusContent() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Post | null | undefined>(undefined);
 
+  // 確認コードを忘れた場合の検索（既存ロジックには影響しない独立 state）
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotForm, setForgotForm] = useState<ForgotSearchForm>(FORGOT_INITIAL);
+  const [forgotResults, setForgotResults] = useState<Post[] | null>(null);
+
+  const setForgot = <K extends keyof ForgotSearchForm>(key: K, value: ForgotSearchForm[K]) => {
+    setForgotForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleForgotAreaChange = (value: LocationArea | "") => {
+    setForgotForm((prev) => ({ ...prev, locationArea: value, location: "" }));
+  };
+
+  const handleForgotSearch = () => {
+    setForgotResults(searchByForgotForm(posts, forgotForm));
+  };
+
+  const forgotLocationOptions = forgotForm.locationArea
+    ? LOCATIONS_BY_AREA[forgotForm.locationArea]
+    : [];
+
   const handleSearch = () => {
     const normalized = normalizeCode(query);
     if (!normalized) {
@@ -221,6 +317,209 @@ function StatusContent() {
                 </div>
               );
             })()}
+          </div>
+        )}
+      </div>
+
+      {/* ── 確認コードを忘れた場合（補助導線） ── */}
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => setForgotOpen((o) => !o)}
+          aria-expanded={forgotOpen}
+          className="inline-flex items-center gap-1 text-[13px] text-primary-600 hover:underline"
+        >
+          確認コードを忘れた場合はこちら
+          <span aria-hidden="true" className="text-[11px]">{forgotOpen ? "▲" : "▼"}</span>
+        </button>
+
+        {forgotOpen && (
+          <div className="mt-3 rounded-xl border-[1.5px] border-border bg-white p-5 shadow-sm sm:p-7">
+            <h2 className="mb-1 text-[16px] font-bold text-[#2D3748]">確認コードを忘れた場合</h2>
+            <p className="mb-2 text-[13px] leading-relaxed text-[#7A746E]">
+              投稿時の情報から検索できます。分かる範囲で入力してください。
+            </p>
+            <p className="mb-5 text-[12px] leading-relaxed text-[#9B9590]">
+              ※匿名性保護のため、検索結果には投稿内容の全文は表示しません。
+            </p>
+
+            <div className="space-y-4">
+              {/* 投稿日 */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">投稿日</label>
+                <input
+                  type="date"
+                  value={forgotForm.date}
+                  onChange={(e) => setForgot("date", e.target.value)}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                />
+              </div>
+
+              {/* 時間帯 */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">時間帯</label>
+                <select
+                  value={forgotForm.timeSlot}
+                  onChange={(e) => setForgot("timeSlot", e.target.value as TimeSlot)}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                >
+                  {TIME_SLOT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 拠点エリア */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">拠点エリア</label>
+                <select
+                  value={forgotForm.locationArea}
+                  onChange={(e) => handleForgotAreaChange(e.target.value as LocationArea | "")}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                >
+                  <option value="">選択してください</option>
+                  {LOCATION_AREAS.map((area) => (
+                    <option key={area} value={area}>{LOCATION_AREA_LABELS[area]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 事業所名 */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">事業所名</label>
+                <select
+                  value={forgotForm.location}
+                  onChange={(e) => setForgot("location", e.target.value)}
+                  disabled={!forgotForm.locationArea}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-[#F5F2EF] disabled:text-[#B0A9A2]"
+                >
+                  <option value="">選択してください</option>
+                  {forgotLocationOptions.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* カテゴリ */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">カテゴリ</label>
+                <select
+                  value={forgotForm.category}
+                  onChange={(e) => setForgot("category", e.target.value as Category | "")}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                >
+                  <option value="">選択してください</option>
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 緊急度 */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">緊急度</label>
+                <select
+                  value={forgotForm.urgency}
+                  onChange={(e) => setForgot("urgency", e.target.value as Urgency | "")}
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                >
+                  <option value="">選択してください</option>
+                  {URGENCIES.map((u) => (
+                    <option key={u} value={u}>{URGENCY_LABELS[u]}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 投稿内容の一部 */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">投稿内容の一部</label>
+                <input
+                  type="text"
+                  value={forgotForm.bodyKeyword}
+                  onChange={(e) => setForgot("bodyKeyword", e.target.value)}
+                  placeholder="例：夜勤体制、設備不備、シフトなど"
+                  className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] placeholder:text-[#B0A9A2] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleForgotSearch}
+                className="w-full rounded-lg bg-primary-600 px-6 py-3 text-[14px] font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                投稿を検索する
+              </button>
+            </div>
+
+            {/* 検索結果 */}
+            {forgotResults !== null && (
+              <div className="mt-5">
+                {forgotResults.length === 0 ? (
+                  <p className="py-4 text-center text-[14px] text-[#9B9590]">
+                    該当する投稿が見つかりませんでした。
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-[13px] font-medium text-[#4A4540]">
+                      該当する投稿が見つかりました（{forgotResults.length}件）。
+                    </p>
+                    {forgotResults.map((p) => {
+                      const excerpt = p.body.slice(0, 30);
+                      const truncated = p.body.length > 30;
+                      return (
+                        <dl
+                          key={p.id}
+                          className="space-y-2 rounded-xl border-[1.5px] border-border bg-surface p-4 text-[13px]"
+                        >
+                          <div>
+                            <dt className="text-[11px] font-medium text-[#9B9590]">受付番号</dt>
+                            <dd className="mt-0.5 font-bold text-[#2D3748]">{p.inquiryNumber ?? p.id}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-[11px] font-medium text-[#9B9590]">投稿日</dt>
+                            <dd className="mt-0.5 text-[#4A4540]">
+                              {new Date(p.createdAt).toLocaleString("ja-JP")}
+                            </dd>
+                          </div>
+                          {p.locationArea && (
+                            <div>
+                              <dt className="text-[11px] font-medium text-[#9B9590]">拠点エリア</dt>
+                              <dd className="mt-0.5 text-[#4A4540]">{LOCATION_AREA_LABELS[p.locationArea]}</dd>
+                            </div>
+                          )}
+                          {p.location && (
+                            <div>
+                              <dt className="text-[11px] font-medium text-[#9B9590]">事業所名</dt>
+                              <dd className="mt-0.5 text-[#4A4540]">{p.location}</dd>
+                            </div>
+                          )}
+                          <div>
+                            <dt className="text-[11px] font-medium text-[#9B9590]">カテゴリ</dt>
+                            <dd className="mt-0.5 text-[#4A4540]">{CATEGORY_LABELS[p.category]}</dd>
+                          </div>
+                          {p.urgency && (
+                            <div>
+                              <dt className="text-[11px] font-medium text-[#9B9590]">緊急度</dt>
+                              <dd className="mt-0.5 text-[#4A4540]">{URGENCY_LABELS[p.urgency]}</dd>
+                            </div>
+                          )}
+                          <div>
+                            <dt className="text-[11px] font-medium text-[#9B9590]">状況</dt>
+                            <dd className="mt-0.5 text-[#4A4540]">{POSTER_STATUS_LABELS[p.status]}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-[11px] font-medium text-[#9B9590]">内容（冒頭のみ）</dt>
+                            <dd className="mt-0.5 text-[#4A4540]">
+                              {excerpt}{truncated ? "…" : ""}
+                            </dd>
+                          </div>
+                        </dl>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
