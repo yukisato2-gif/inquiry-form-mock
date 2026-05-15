@@ -174,6 +174,18 @@ export default function PostFormPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
         </a>
+        {/* ヒヤリハット報告書（別Googleフォーム）— URLは差し替え予定 */}
+        <a
+          href="https://docs.google.com/forms/xxxxxxxx"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-border px-4 py-2 text-[13px] font-medium text-[#6B6560] transition-colors hover:border-[#C0BAB4] hover:bg-[#F5F2EF]"
+        >
+          ヒヤリハット報告書へ
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
       </div>
 
       {/* ═══ セクション1: 基本情報 ═══ */}
