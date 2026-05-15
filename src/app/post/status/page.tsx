@@ -193,6 +193,13 @@ function StatusContent() {
     setForgotSubmitted(true);
   };
 
+  /** 必須4項目（投稿日 / 拠点エリア / 事業所名 / カテゴリ）が揃っているか */
+  const forgotIsValid =
+    !!forgotForm.date &&
+    !!forgotForm.locationArea &&
+    !!forgotForm.location &&
+    !!forgotForm.category;
+
   const forgotLocationOptions = forgotForm.locationArea
     ? LOCATIONS_BY_AREA[forgotForm.locationArea]
     : [];
@@ -333,7 +340,12 @@ function StatusContent() {
                 <div className="space-y-4">
                   {/* 投稿日 */}
                   <div>
-                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">投稿日</label>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">
+                      投稿日<span className="text-red-500"> *</span>
+                    </label>
+                    <p className="mb-1.5 text-[12px] leading-relaxed text-[#9B9590]">
+                      正確な日付が分からない場合は、近い日付を選択してください。
+                    </p>
                     <input
                       type="date"
                       value={forgotForm.date}
@@ -358,7 +370,9 @@ function StatusContent() {
 
                   {/* 拠点エリア */}
                   <div>
-                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">拠点エリア</label>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">
+                      拠点エリア<span className="text-red-500"> *</span>
+                    </label>
                     <select
                       value={forgotForm.locationArea}
                       onChange={(e) => handleForgotAreaChange(e.target.value as LocationArea | "")}
@@ -373,7 +387,9 @@ function StatusContent() {
 
                   {/* 事業所名 */}
                   <div>
-                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">事業所名</label>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">
+                      事業所名<span className="text-red-500"> *</span>
+                    </label>
                     <select
                       value={forgotForm.location}
                       onChange={(e) => setForgot("location", e.target.value)}
@@ -389,7 +405,9 @@ function StatusContent() {
 
                   {/* カテゴリ */}
                   <div>
-                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">カテゴリ</label>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">
+                      カテゴリ<span className="text-red-500"> *</span>
+                    </label>
                     <select
                       value={forgotForm.category}
                       onChange={(e) => setForgot("category", e.target.value as Category | "")}
@@ -434,6 +452,9 @@ function StatusContent() {
                     <label className="mb-1.5 block text-[13px] font-medium text-[#4A4540]">
                       メールアドレス（任意）
                     </label>
+                    <p className="mb-1.5 text-[12px] leading-relaxed text-[#9B9590]">
+                      確認コードのご案内が必要な場合のみ入力してください。
+                    </p>
                     <input
                       type="email"
                       value={forgotForm.email}
@@ -442,15 +463,13 @@ function StatusContent() {
                       autoComplete="email"
                       className="w-full rounded-lg border-[1.5px] border-border bg-white px-4 py-2.5 text-[14px] text-[#2D3748] placeholder:text-[#B0A9A2] focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100"
                     />
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-[#9B9590]">
-                      確認コードのご案内が必要な場合のみ入力してください。
-                    </p>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleForgotSubmit}
-                    className="w-full rounded-lg bg-primary-600 px-6 py-3 text-[14px] font-medium text-white transition-colors hover:bg-primary-700"
+                    disabled={!forgotIsValid}
+                    className="w-full rounded-lg bg-primary-600 px-6 py-3 text-[14px] font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-600/40 disabled:hover:bg-primary-600/40"
                   >
                     確認コードの照会を依頼する
                   </button>
