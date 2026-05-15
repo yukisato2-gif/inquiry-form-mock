@@ -16,6 +16,7 @@ import {
   EXPECTED_ACTION_LABELS,
 } from "@/lib/constants";
 import DetailPanel from "@/components/reception/DetailPanel";
+import CodeInquiryView from "@/components/reception/CodeInquiryView";
 import { calcSla } from "@/lib/sla";
 import type { Status, Category, Urgency, FlowStage, ExpectedAction } from "@/types";
 
@@ -45,10 +46,11 @@ const URGENCY_BADGE: Record<Urgency, string> = {
   proposal: "bg-gray-100 text-gray-700",
 };
 
-type ViewFilter = "all" | "mine" | "unconfirmed" | "urgent" | "in_progress";
+type ViewFilter = "all" | "mine" | "unconfirmed" | "urgent" | "in_progress" | "code_inquiry";
 
 export default function ReceptionPage() {
   const posts = useAppStore((s) => s.posts);
+  const codeInquiries = useAppStore((s) => s.codeInquiries);
   const currentAdmin = useAppStore((s) => s.currentAdmin);
   const setCurrentAdmin = useAppStore((s) => s.setCurrentAdmin);
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
@@ -123,13 +125,19 @@ export default function ReceptionPage() {
 
   const selectedPost = selectedId ? posts.find((p) => p.id === selectedId) : null;
 
+  const unconfirmedInquiryCount = useMemo(
+    () => codeInquiries.filter((q) => q.status === "unconfirmed").length,
+    [codeInquiries],
+  );
+
   const counts = useMemo(() => ({
     all: posts.length,
     mine: posts.filter((p) => isMyDeptPost(p)).length,
     unconfirmed: posts.filter((p) => p.status === "RECEIVED").length,
     urgent: posts.filter((p) => p.urgency === "urgent").length,
     in_progress: posts.filter((p) => p.status === "CONFIRMED" || p.status === "ESCALATED").length,
-  }), [posts, myDept]);
+    code_inquiry: codeInquiries.length,
+  }), [posts, codeInquiries, myDept]);
 
   // 自部署の未確認
   const myUnconfirmed = useMemo(
@@ -157,11 +165,14 @@ export default function ReceptionPage() {
     { key: "unconfirmed", label: "未確認" },
     { key: "urgent", label: "至急" },
     { key: "in_progress", label: "対応中" },
+    { key: "code_inquiry", label: "確認コード照会" },
   ];
+
+  const isInquiryTab = viewFilter === "code_inquiry";
 
   return (
     <div className="flex h-full">
-      <main className={`flex-1 overflow-y-auto p-6 ${selectedPost ? "hidden lg:block" : ""}`}>
+      <main className={`flex-1 overflow-y-auto p-6 ${selectedPost && !isInquiryTab ? "hidden lg:block" : ""}`}>
         {/* ヘッダー */}
         <div className="mb-4">
           <h1 className="text-lg font-bold text-[#2D3748]">受付状況</h1>
@@ -181,6 +192,21 @@ export default function ReceptionPage() {
               className="text-[12px] font-medium text-primary-600 hover:text-primary-700"
             >
               自部署を表示 →
+            </button>
+          </div>
+        )}
+
+        {/* 確認コード照会の未確認件数 */}
+        {unconfirmedInquiryCount > 0 && (
+          <div className="mb-4 flex items-center justify-between rounded-xl border-[1.5px] border-border bg-[#FAF8F6] px-4 py-3">
+            <p className="text-[13px] text-[#4A4540]">
+              確認コード照会依頼が <span className="font-bold text-primary-700">{unconfirmedInquiryCount}件</span> あります
+            </p>
+            <button
+              onClick={() => setViewFilter("code_inquiry")}
+              className="text-[12px] font-medium text-primary-600 hover:text-primary-700"
+            >
+              照会依頼を表示 →
             </button>
           </div>
         )}
@@ -217,6 +243,9 @@ export default function ReceptionPage() {
           })}
         </div>
 
+        {isInquiryTab && <CodeInquiryView />}
+
+        {!isInquiryTab && (<>
         {/* フィルター */}
         <div className="mb-4 flex flex-wrap gap-2">
           <select
@@ -522,9 +551,10 @@ export default function ReceptionPage() {
             </button>
           </div>
         )}
+        </>)}
       </main>
 
-      {selectedPost && (
+      {!isInquiryTab && selectedPost && (
         <DetailPanel
           post={selectedPost}
           onClose={() => setSelectedId(null)}

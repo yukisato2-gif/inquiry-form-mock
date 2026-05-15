@@ -1,4 +1,4 @@
-import type { Category, Status, Role, Urgency, ExpectedAction, LocationArea } from "@/types";
+import type { Category, Status, Role, Urgency, ExpectedAction, LocationArea, CodeInquiryStatus } from "@/types";
 
 // ============================================
 // カテゴリ
@@ -307,6 +307,33 @@ export const CATEGORY_ASSIGNMENTS: Record<Category, CategoryAssignment> = {
   relationship: { primary: "hr",            related: ["healthcare"] },
   policy:       { primary: "management_hq", related: ["healthcare", "general"] },
   other:        { primary: "healthcare",    related: [] },
+};
+
+// ============================================
+// 確認コード照会依頼（投稿者→管理者）
+// ============================================
+export const TIME_SLOT_LABELS: Record<string, string> = {
+  "": "—",
+  morning: "朝",
+  noon: "昼",
+  evening: "夕方",
+  night: "夜",
+  midnight: "深夜",
+  unknown: "不明",
+};
+
+export const CODE_INQUIRY_STATUSES: CodeInquiryStatus[] = [
+  "unconfirmed",
+  "in_progress",
+  "emailed",
+  "no_match",
+];
+
+export const CODE_INQUIRY_STATUS_LABELS: Record<CodeInquiryStatus, string> = {
+  unconfirmed: "未確認",
+  in_progress: "確認中",
+  emailed: "メール送信済",
+  no_match: "該当なし",
 };
 
 /** モック管理ユーザー一覧 */

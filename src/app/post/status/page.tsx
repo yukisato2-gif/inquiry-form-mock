@@ -171,6 +171,7 @@ function normalizeCode(input: string): string {
 
 function StatusContent() {
   const posts = useAppStore((s) => s.posts);
+  const addCodeInquiry = useAppStore((s) => s.addCodeInquiry);
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Post | null | undefined>(undefined);
 
@@ -190,6 +191,16 @@ function StatusContent() {
   };
 
   const handleForgotSubmit = () => {
+    addCodeInquiry({
+      date: forgotForm.date,
+      timeSlot: forgotForm.timeSlot,
+      locationArea: forgotForm.locationArea,
+      location: forgotForm.location,
+      category: forgotForm.category,
+      urgency: forgotForm.urgency,
+      bodyKeyword: forgotForm.bodyKeyword,
+      email: forgotForm.email,
+    });
     setForgotSubmitted(true);
   };
 

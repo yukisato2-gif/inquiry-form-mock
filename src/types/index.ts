@@ -127,3 +127,29 @@ export interface FlowRecord {
   from: FlowStage | null;
   to: FlowStage;
 }
+
+/** 確認コード照会依頼の状態（管理者運用用） */
+export type CodeInquiryStatus =
+  | "unconfirmed"  // 未確認
+  | "in_progress"  // 確認中
+  | "emailed"      // メール送信済
+  | "no_match";    // 該当なし
+
+/**
+ * 確認コード照会依頼（/post/status の「確認コードを忘れた場合」フォームから投稿者が送信）
+ * 投稿者には検索結果を返さず、管理者側でこのレコードを確認 → メールでコード案内する運用。
+ */
+export interface CodeInquiry {
+  id: string;                            // "REQ-XXXXXX"
+  requestedAt: string;                   // ISO 8601 — 依頼日時
+  date: string;                          // YYYY-MM-DD — 投稿日（投稿者申告）
+  timeSlot: string;                      // morning / noon / evening / night / midnight / unknown / ""
+  locationArea: LocationArea | "";
+  location: string;
+  category: Category | "";
+  urgency: Urgency | "";
+  bodyKeyword: string;                   // 投稿内容の一部キーワード（投稿者申告）
+  email: string;                         // 案内先メール（任意）
+  status: CodeInquiryStatus;
+  adminMemo: string;
+}

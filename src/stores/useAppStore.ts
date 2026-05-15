@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type {
   Post, Status, Role, Category, Urgency, ExpectedAction, LocationArea,
   AdminUser, FlowStage, ResponsePolicy, AssignRecord, ActionLogEntry, FlowRecord,
+  CodeInquiry, CodeInquiryStatus,
 } from "@/types";
 import { mockPosts } from "@/data/mockPosts";
 import {
@@ -87,6 +88,18 @@ export interface NewPostIdentifiers {
   confirmationCode: string; // 本人確認コード
 }
 
+/** /post/status「確認コードを忘れた場合」フォームから送信される依頼の入力値 */
+export interface CodeInquiryDraft {
+  date: string;
+  timeSlot: string;
+  locationArea: CodeInquiry["locationArea"];
+  location: string;
+  category: CodeInquiry["category"];
+  urgency: CodeInquiry["urgency"];
+  bodyKeyword: string;
+  email: string;
+}
+
 interface AppState {
   posts: Post[];
   currentRole: Role;
@@ -95,6 +108,8 @@ interface AppState {
   /** 拠点管理者（ホーム長）モックで選択中の拠点。null の場合は未選択。
    *  セッション内のみ保持し、永続化はしない（partialize 対象外）。 */
   currentSiteLocation: string | null;
+  /** 確認コード照会依頼（投稿者→管理者の片方向データ） */
+  codeInquiries: CodeInquiry[];
 
   addPost: (draft: PostDraft) => NewPostIdentifiers;
   advanceStage: (id: string, stage: FlowStage) => void;
@@ -109,6 +124,9 @@ interface AppState {
   setRole: (role: Role) => void;
   setCurrentAdmin: (admin: AdminUser) => void;
   setCurrentSiteLocation: (loc: string | null) => void;
+  addCodeInquiry: (draft: CodeInquiryDraft) => string;
+  updateCodeInquiryStatus: (id: string, status: CodeInquiryStatus) => void;
+  updateCodeInquiryMemo: (id: string, memo: string) => void;
 }
 
 /** 見間違えにくい 32 文字（I/O/1/0 を除外） */
@@ -140,6 +158,15 @@ function createInitialPosts(): Post[] {
   return JSON.parse(JSON.stringify(mockPosts));
 }
 
+/** 照会依頼ID（"REQ-" + 6文字） */
+function generateInquiryId(): string {
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += SAFE_CHARS[Math.floor(Math.random() * SAFE_CHARS.length)];
+  }
+  return `REQ-${code}`;
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -148,6 +175,7 @@ export const useAppStore = create<AppState>()(
       nextId: mockPosts.length + 1,
       currentAdmin: MOCK_ADMIN_USERS[0],
       currentSiteLocation: null,
+      codeInquiries: [],
 
       addPost: (draft) => {
         const id = generateId();
@@ -329,21 +357,57 @@ export const useAppStore = create<AppState>()(
 
       resetPosts: () => {
         localStorage.removeItem("inquiry-form-mock-store");
-        set({ posts: createInitialPosts(), nextId: mockPosts.length + 1 });
+        set({ posts: createInitialPosts(), nextId: mockPosts.length + 1, codeInquiries: [] });
       },
       setRole: (role) => set({ currentRole: role }),
       setCurrentAdmin: (admin) => set({ currentAdmin: admin }),
       setCurrentSiteLocation: (loc) => set({ currentSiteLocation: loc }),
+
+      addCodeInquiry: (draft) => {
+        const id = generateInquiryId();
+        const now = new Date().toISOString();
+        const newInquiry: CodeInquiry = {
+          id,
+          requestedAt: now,
+          date: draft.date,
+          timeSlot: draft.timeSlot,
+          locationArea: draft.locationArea,
+          location: draft.location,
+          category: draft.category,
+          urgency: draft.urgency,
+          bodyKeyword: draft.bodyKeyword,
+          email: draft.email,
+          status: "unconfirmed",
+          adminMemo: "",
+        };
+        set((s) => ({ codeInquiries: [newInquiry, ...s.codeInquiries] }));
+        return id;
+      },
+
+      updateCodeInquiryStatus: (id, status) => {
+        set((s) => ({
+          codeInquiries: s.codeInquiries.map((q) => (q.id === id ? { ...q, status } : q)),
+        }));
+      },
+
+      updateCodeInquiryMemo: (id, memo) => {
+        set((s) => ({
+          codeInquiries: s.codeInquiries.map((q) => (q.id === id ? { ...q, adminMemo: memo } : q)),
+        }));
+      },
     }),
     {
       name: "inquiry-form-mock-store",
-      // posts と nextId のみ永続化。currentRole / currentAdmin はセッション内のみ。
+      // posts / nextId / currentAdmin / codeInquiries を永続化。
+      // currentRole / currentSiteLocation はセッション内のみ。
       partialize: (state) => ({
         posts: state.posts,
         nextId: state.nextId,
         currentAdmin: state.currentAdmin,
+        codeInquiries: state.codeInquiries,
       }),
-      // 復元時に actionLog / flowHistory / assignHistory を正規化
+      // 復元時に actionLog / flowHistory / assignHistory を正規化。
+      // codeInquiries は新規追加フィールドなので、旧データで未定義なら空配列にフォールバック。
       merge: (persisted, current) => {
         const p = persisted as Partial<AppState>;
         return {
@@ -351,6 +415,7 @@ export const useAppStore = create<AppState>()(
           posts: p.posts ? normalizePosts(p.posts) : current.posts,
           nextId: p.nextId ?? current.nextId,
           currentAdmin: p.currentAdmin ?? current.currentAdmin,
+          codeInquiries: p.codeInquiries ?? current.codeInquiries,
         };
       },
     },
