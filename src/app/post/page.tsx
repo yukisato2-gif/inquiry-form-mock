@@ -176,7 +176,7 @@ export default function PostFormPage() {
         </a>
         {/* ヒヤリハット報告書（別Googleフォーム）— URLは差し替え予定 */}
         <a
-          href="https://docs.google.com/forms/xxxxxxxx"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfmvoQUAKRlojUD_cCqWKRUK3CFJW3vAJeQZAXe5_1XZ95YKA/viewform?usp=header"
           target="_blank"
           rel="noopener noreferrer"
           className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-border px-4 py-2 text-[13px] font-medium text-[#6B6560] transition-colors hover:border-[#C0BAB4] hover:bg-[#F5F2EF]"
